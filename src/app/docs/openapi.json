@@ -1,0 +1,15 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "API",
+        "version": "1.0.0",
+        "description": "API para BOT"
+    },
+    "paths": {
+
+    },
+    "components": {
+        "schemas": {
+        }
+    }
+}

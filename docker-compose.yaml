@@ -1,0 +1,64 @@
+version: "3.8"
+
+volumes:
+  db-data:
+  redis_data:
+
+services:
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: ./docker/app.dockerfile
+    env_file:
+      ./src/.env
+    volumes:
+      - ./src/:/var/www/
+    restart: unless-stopped
+    depends_on:
+      - db
+
+  web:
+    container_name: nginx
+    build:
+      context: .
+      dockerfile: ./docker/web.dockerfile
+    restart: always
+    volumes:
+      - ./src:/var/www
+    tty: true
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+
+  app-queue:
+    build:
+      context: .
+      dockerfile: ./docker/app.dockerfile
+    env_file:
+      ./src/.env
+    command: php artisan queue:work redis --queue=app_01_alta --memory=1024 --max-jobs=1000
+    restart: unless-stopped
+    depends_on:
+      - web
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    volumes:
+      - redis_data:/data
+
+  db:
+    container_name: db
+    image: mysql
+    restart: always
+    command: --character-set-server=utf8 --collation-server=utf8_general_ci --bind-address=0.0.0.0
+    environment:
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=80777D21SDR1567BA
+      - MYSQL_ROOT_PASSWORD=808S280777D21SDR1567BA
+      - MYSQL_DATABASE=app
+      - MYSQL_ROOT_HOST=%
+    volumes:
+      - db-data:/var/lib/mysql
