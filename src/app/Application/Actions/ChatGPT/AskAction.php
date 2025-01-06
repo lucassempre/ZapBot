@@ -36,4 +36,12 @@ class AskAction
         return data_get($response->json(), 'choices.0.message.content', 'Sem resposta');
     }
 
+    public function askAssistantGPT()
+    {
+        $message = $messageRepository->create([
+            'telefone_uuid' => $telefone->uuid,
+            'resposta' => $message,
+        ]);
+    }
+
 }

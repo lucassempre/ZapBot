@@ -2,10 +2,8 @@
 
 namespace App\Application\Jobs;
 
-use App\Application\Actions\Validate\ValidAction;
-use App\Infrastructure\Repositories\MessageRepository;
+use App\Application\Actions\ChatGPT\AskAssistantAction;
 use App\Infrastructure\Repositories\StatusRepository;
-use App\Infrastructure\Repositories\TelefoneRepository;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -16,7 +14,7 @@ use Illuminate\Support\Facades\Queue;
 use Mockery\Exception;
 use Throwable;
 
-class ValidateJob implements ShouldQueue
+class AskAssistantJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, Batchable;
 
@@ -32,16 +30,20 @@ class ValidateJob implements ShouldQueue
      *
      * @return void
      */
-    public function handle(ValidAction $action)
+    public function handle(AskAssistantAction $action)
     {
-        $message = $action->execute($this->payload);
-        if(!data_get($this->payload,'telefone'))
-            throw new Exception('Mensagem sem numero invalidada');
-        if($message) {
-            Queue::pushOn('app_01_alta', new ReplyInvalidJob($this->payload, $message));
-            throw new Exception('Processamento invalidado');
+        $ask = $action->execute(data_get($this->payload,'ask'), data_get($this->payload, 'telefone'));
+        if(!empty($ask)) {
+            Queue::pushOn(
+                'app_01_alta',
+                new RetriveAssistantJob(
+                    data_get($ask, 'message_id'),
+                    data_get($ask, 'run_id'),
+                    data_get($ask, 'tread_id'),
+                    data_get($this->payload, 'telefone'),
+                    data_get($this->payload, 'uuid'),
+                ));
         }
-
     }
 
     public function failed(?Throwable $exception): void

@@ -15,7 +15,6 @@ class ValidAction
 
     public function execute(array $payload): ?string
     {
-        print_r($payload);
         if(!$this->action->execute(data_get($payload,'telefone')))
             return 'Sem permissão para consultar IA';
 

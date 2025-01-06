@@ -2,6 +2,7 @@
 
 namespace App\Application\Actions\Webhook;
 
+use App\Application\Jobs\ProcessAssistantJob;
 use App\Application\Jobs\ProcessJob;
 use App\Domain\Repositories\WebhookRepositoryInterface;
 use Illuminate\Support\Facades\Queue;
@@ -21,7 +22,7 @@ class CriarAction
         $webhook = $this->repository->create([
             'payload' => json_encode($json)
         ]);
-        Queue::pushOn('app_01_alta', new ProcessJob($webhook->uuid));
+        Queue::pushOn('app_01_alta', new ProcessAssistantJob($webhook->uuid));
     }
 
 }
